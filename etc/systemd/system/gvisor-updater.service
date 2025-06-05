@@ -1,0 +1,47 @@
+[Unit]
+Description=Update gVisor
+Requires=network-online.target
+After=network-online.target
+Before=docker.service
+
+[Service]
+Type=oneshot
+RuntimeDirectory=gvisor-updater
+WorkingDirectory=/run/gvisor-updater
+        
+ExecStart=/usr/bin/sleep 5
+ExecStart=curl -sS --remote-name-all 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/runsc' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/runsc.sha512' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/containerd-shim-runsc-v1' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/containerd-shim-runsc-v1.sha512'
+ExecStart=sha512sum -c runsc.sha512 -c containerd-shim-runsc-v1.sha512
+ExecStart=+chown root:root runsc containerd-shim-runsc-v1
+ExecStart=+chmod a+rx runsc containerd-shim-runsc-v1
+ExecStart=+mv -Z runsc containerd-shim-runsc-v1 /usr/local/bin/
+
+DynamicUser=true
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateIPC=true
+PrivateTmp=true
+ProcSubset=pid
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectProc=invisible
+ProtectSystem=strict
+RestrictAddressFamilies=
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RuntimeDirectoryMode=700
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@obsolete
+
+[Install]
+WantedBy=multi-user.target
