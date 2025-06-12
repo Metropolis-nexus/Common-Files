@@ -1,9 +1,0 @@
-[Unit]
-Description=Run docker-compose-updater for /srv/%I daily, 30 mintues after OS updates
-
-[Timer]
-OnCalendar=*-*-* 04:30
-Persistent=true
-
-[Install]
-WantedBy=timers.target

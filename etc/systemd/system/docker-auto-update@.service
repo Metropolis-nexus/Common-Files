@@ -1,5 +1,5 @@
 [Unit]
-Description=Docker Compose Updater for /srv/%I
+Description=Update Docker continers defined in /srv/%I
 Requires=network-online.target
 Requisite=docker.service
 After=network-online.target
