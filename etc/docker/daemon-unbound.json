@@ -30,6 +30,9 @@
                 "--network=host",
                 "--host-uds=open"
             ]
+        },
+        "crun": {
+            "path": "/usr/sbin/crun"
         }
     },
     "default-address-pools": [
