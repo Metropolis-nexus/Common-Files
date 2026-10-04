@@ -1,22 +1,36 @@
+# https://v1.colloid.foo/11933239-6b3a-4dd8-b13e-675c7f5ed112/
+# CC BY 4.0
+
 [Unit]
 Description=Update gVisor
-Requires=network-online.target
+Wants=network-online.target
 After=network-online.target
 Before=docker.service
 
+AssertArchitecture=|x86-64
+AssertArchitecture=|arm64
+
 [Service]
 Type=oneshot
-RuntimeDirectory=gvisor-updater
-WorkingDirectory=/run/gvisor-updater
-        
-ExecStart=/usr/bin/sleep 5
-ExecStart=curl -sS --remote-name-all 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/runsc' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/runsc.sha512' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/containerd-shim-runsc-v1' 'https://storage.googleapis.com/gvisor/releases/release/latest/x86_64/containerd-shim-runsc-v1.sha512'
-ExecStart=sha512sum -c runsc.sha512 -c containerd-shim-runsc-v1.sha512
-ExecStart=+chown root:root runsc containerd-shim-runsc-v1
-ExecStart=+chmod a+rx runsc containerd-shim-runsc-v1
-ExecStart=+mv -Z runsc containerd-shim-runsc-v1 /usr/local/bin/
 
-DynamicUser=true
+RuntimeDirectory=gvisor-update.service
+WorkingDirectory=/run/gvisor-update.service/
+
+Environment="BASE_URL=https://storage.googleapis.com/gvisor/releases/release/latest"
+
+ExecStart=sh -c ' \
+    test "%a" = "x86-64" && ARCH=x86_64 || ARCH=aarch64; \
+    curl -sS --tlsv1.2 -O "$BASE_URL/$ARCH/gvisor.tar.zstd{,.sha512}" \
+    '
+ExecStart=sha512sum -c gvisor.tar.zstd.sha512
+ExecStart=tar --restrict --warning=all --force-local -x --no-same-owner --no-same-permissions \
+    --no-acls --no-selinux --no-xattrs -f 'gvisor.tar.zstd' --zstd
+ExecStart=+chown -R root:root runsc containerd-shim-runsc-v1 gvisor-bin
+ExecStart=+chmod -R 755 runsc containerd-shim-runsc-v1 gvisor-bin
+ExecStart=+rm -rf /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1 /usr/local/bin/gvisor-bin
+ExecStart=+mv -Z runsc containerd-shim-runsc-v1 gvisor-bin /usr/local/bin/
+
+DynamicUser=false
 CapabilityBoundingSet=
 LockPersonality=true
 MemoryDenyWriteExecute=true
@@ -37,11 +51,7 @@ ProtectSystem=strict
 RestrictAddressFamilies=
 RestrictNamespaces=true
 RestrictRealtime=true
-RestrictSUIDSGID=true
-RuntimeDirectoryMode=700
+RestrictSUIDSGID=false
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@obsolete
-
-[Install]
-WantedBy=multi-user.target
