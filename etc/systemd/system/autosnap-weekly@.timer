@@ -1,0 +1,14 @@
+# https://v1.colloid.foo/b60bd269-a0d5-4866-8ca4-ea2e84371169/
+# CC BY 4.0
+
+[Unit]
+Description=Snapshot VM with ID %i weekly
+
+[Timer]
+Unit=autosnap@%i.service
+OnCalendar=Sun 00:00 Etc/UTC
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

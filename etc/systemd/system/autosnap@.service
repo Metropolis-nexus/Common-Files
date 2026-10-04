@@ -1,0 +1,9 @@
+# https://v1.colloid.foo/b60bd269-a0d5-4866-8ca4-ea2e84371169/
+# CC BY 4.0
+
+[Unit]
+Description=Snapshot VM with ID %i
+
+[Service]
+Type=oneshot
+ExecStart=sh -c 'qm snapshot "%i" "autosnap-$(date +%%s)" --vmstate false'
